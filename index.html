@@ -66,7 +66,7 @@
 
 <body class="bg-animation flex flex-col items-center justify-center min-h-screen text-white text-center px-4">
     <div>
-        <img src="/img/logo.png" alt="Logo" class="logo mx-auto mb-4">
+        <img src="logo.png" alt="Logo" class="logo mx-auto mb-4">
     </div>
 
     <div id="quiz-container" class="w-full max-w-lg bg-white text-black rounded-xl shadow-lg p-6 relative">
@@ -169,10 +169,10 @@
             let result = Object.keys(scoreCount).reduce((a, b) => scoreCount[a] > scoreCount[b] ? a : b);
 
             const resultData = {
-                A: { text: "You are a Fresh & Clean fragrance lover! Scents like mint, green tea, and fresh herbs suit you best.", image: "/img/fresh.png" },
-                B: { text: "You love Floral & Romantic scents! Think of rose, jasmine, and peony as your perfect match.", image: "/img/floral.png" },
-                C: { text: "You are drawn to Citrus & Fruity fragrances! Zesty notes like lemon, orange, and berries reflect your energy.", image: "/img/citrus.png" },
-                D: { text: "Woody & Spicy scents are your vibe! Deep notes of sandalwood, amber, and musk define your personality.", image: "/img/woody.png" }
+                A: { text: "You are a Fresh & Clean fragrance lover! Scents like mint, green tea, and fresh herbs suit you best.", image: "/fresh.png" },
+                B: { text: "You love Floral & Romantic scents! Think of rose, jasmine, and peony as your perfect match.", image: "floral.png" },
+                C: { text: "You are drawn to Citrus & Fruity fragrances! Zesty notes like lemon, orange, and berries reflect your energy.", image: "citrus.png" },
+                D: { text: "Woody & Spicy scents are your vibe! Deep notes of sandalwood, amber, and musk define your personality.", image: "woody.png" }
             };
 
             document.getElementById("result-text").textContent = resultData[result].text;
