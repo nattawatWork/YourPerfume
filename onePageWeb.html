@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personality Perfume Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        .bg-animation {
+            background: linear-gradient(120deg, #ff9a9e, #fad0c4, #ffdde1);
+            background-size: 300% 300%;
+            animation: bgMove 10s infinite alternate ease-in-out;
+        }
+
+        @keyframes bgMove {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            100% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .progress-bar {
+            height: 8px;
+            width: 0;
+            background-color: #ff4d6d;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .logo {
+            width: 180px;
+            height: auto;
+        }
+
+        @media (min-width: 768px) {
+            .logo {
+                width: 300px;
+            }
+        }
+
+        .result-image {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        @media (min-width: 768px) {
+            .result-image {
+                width: 150px;
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-animation flex flex-col items-center justify-center min-h-screen text-white text-center px-4">
+    <div>
+        <img src="/img/logo.png" alt="Logo" class="logo mx-auto mb-4">
+    </div>
+
+    <div id="quiz-container" class="w-full max-w-lg bg-white text-black rounded-xl shadow-lg p-6 relative">
+        <div class="w-full bg-gray-300 rounded-full h-2 mb-4">
+            <div id="progress" class="progress-bar rounded-full"></div>
+        </div>
+
+        <h2 class="text-xl md:text-2xl font-bold mb-4" id="question"></h2>
+        <div id="options" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        <div id="short-answer" class="hidden mt-4">
+            <input type="text" id="short-answer-input" class="w-full px-4 py-2 border rounded-lg"
+                placeholder="Your answer...">
+            <button id="submit-answer"
+                class="mt-2 px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-700 transition">Submit</button>
+        </div>
+    </div>
+
+    <div id="result-container" class="hidden w-full max-w-lg bg-white text-black rounded-xl shadow-lg p-6 text-center">
+        <h2 class="text-2xl md:text-3xl font-bold mb-4">Your Perfume Personality</h2>
+        <img id="result-image" class="result-image mx-auto mb-4" src="" alt="Perfume Type">
+        <p id="result-text" class="text-lg"></p>
+        <button onclick="location.reload()"
+            class="mt-4 px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-700 transition">Try again</button>
+    </div>
+
+    <script>
+        const questions = [
+            { question: "What is your Phone number?", type: "short" },
+            { question: "What is your age?", options: ["🌿 <20 Years", "🌸 20-30 Years", "🏰 31-40 Years", "🍋 >41 Years"] },
+            { question: "What is your gender?", options: ["🌿 Male", "🌸 Female", "🍋 LGBTQA+"] },
+            { question: "What is your business?", options: ["🌿 Government officer", "🌸 Personal business", "🍋 Officer", "💃 Student", "🌿 Other"] },
+            { question: "Do you interested in buying perfume in the future?", options: ["🌿 Yes", "🌸 No", "🍋 Not Sure"] },
+            { question: "What scent makes you feel the most relaxed?", options: ["🌿 Fresh Herbs", "🌸 Floral Blooms", "🍋 Citrus Zest", "🌲 Woody & Earthy"], scores: ['A', 'B', 'C', 'D'] },
+            { question: "What best describes your personality?", options: ["✨ Elegant & Romantic", "🌞 Bright & Energetic", "💫 Mysterious & Bold", "🍃 Calm & Natural"], scores: ['B', 'C', 'D', 'A'] },
+            { question: "If you could visit any place, where would it be?", options: ["🏝️ Tropical Island", "🏰 European City", "🌿 Mountain Retreat", "🎭 A Vibrant Festival"], scores: ['C', 'B', 'A', 'D'] },
+            { question: "What type of fashion style do you love?", options: ["💃 Classic & Chic", "👕 Casual & Simple", "🎸 Edgy & Unique", "🌿 Bohemian & Free-Spirited"], scores: ['B', 'A', 'D', 'C'] },
+            { question: "Which drink would you choose on a night out?", options: ["🍷 Red Wine", "🍹 Fruity Cocktail", "☕ Herbal Tea", "🥃 Whiskey"], scores: ['B', 'C', 'A', 'D'] }
+        ];
+
+        let currentQuestionIndex = 0;
+        let scoreCount = { A: 0, B: 0, C: 0, D: 0 };
+        let userResponses = {};
+
+        function loadQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                submitToGoogleForm();
+                showResult();
+                return;
+            }
+
+            document.getElementById("progress").style.width = `${(currentQuestionIndex / questions.length) * 100}%`;
+            const questionData = questions[currentQuestionIndex];
+            document.getElementById("question").textContent = questionData.question;
+
+            if (questionData.type === "short") {
+                document.getElementById("options").classList.add("hidden");
+                document.getElementById("short-answer").classList.remove("hidden");
+            } else {
+                document.getElementById("short-answer").classList.add("hidden");
+                document.getElementById("options").classList.remove("hidden");
+                document.getElementById("options").innerHTML = "";
+                questionData.options.forEach((option, index) => {
+                    const btn = document.createElement("button");
+                    btn.classList = "w-full px-4 py-3 text-sm md:text-base bg-gray-100 rounded-lg hover:bg-pink-400 hover:text-white transition duration-300";
+                    btn.innerHTML = option;
+                    btn.onclick = () => {
+                        userResponses[questionData.question] = option.replace(/🌿|🌸|🏰|🍋|💃|🌲|🎭|🎸|💫|🌞|✨|🏝️|🍷|🍹|☕|🥃/g, "").trim();
+                        if (questionData.scores) {
+                            scoreCount[questionData.scores[index]]++;
+                        }
+                        nextQuestion();
+                    };
+                    document.getElementById("options").appendChild(btn);
+                });
+            }
+        }
+
+        document.getElementById("submit-answer").addEventListener("click", () => {
+            let answer = document.getElementById("short-answer-input").value.trim();
+            if (answer) {
+                userResponses[questions[currentQuestionIndex].question] = answer;
+                document.getElementById("short-answer-input").value = "";
+                nextQuestion();
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Please enter an answer.",
+                });
+            }
+        });
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function showResult() {
+            document.getElementById("quiz-container").classList.add("hidden");
+            document.getElementById("result-container").classList.remove("hidden");
+            let result = Object.keys(scoreCount).reduce((a, b) => scoreCount[a] > scoreCount[b] ? a : b);
+
+            const resultData = {
+                A: { text: "You are a Fresh & Clean fragrance lover! Scents like mint, green tea, and fresh herbs suit you best.", image: "/img/fresh.png" },
+                B: { text: "You love Floral & Romantic scents! Think of rose, jasmine, and peony as your perfect match.", image: "/img/floral.png" },
+                C: { text: "You are drawn to Citrus & Fruity fragrances! Zesty notes like lemon, orange, and berries reflect your energy.", image: "/img/citrus.png" },
+                D: { text: "Woody & Spicy scents are your vibe! Deep notes of sandalwood, amber, and musk define your personality.", image: "/img/woody.png" }
+            };
+
+            document.getElementById("result-text").textContent = resultData[result].text;
+            document.getElementById("result-image").src = resultData[result].image;
+        }
+
+        function submitToGoogleForm() {
+
+            const googleFormURL = "https://docs.google.com/forms/d/e/1FAIpQLSdu5gmqiwv8MrdwFqD7YK50rDxu0XXMzaQ6HyDfwsaFQCls2Q/formResponse";
+
+            const resultData = {
+                A: "Fresh & Clean",
+                B: "Floral & Romantic",
+                C: "Citrus & Fruity",
+                D: "Woody & Spicy"
+            };
+            let resultType = Object.keys(scoreCount).reduce((a, b) => scoreCount[a] > scoreCount[b] ? a : b);
+            const finalResult = resultData[resultType];
+
+            const formData = new URLSearchParams({
+                "entry.833914980": userResponses["What is your age?"] || "",                                    //Age
+                "entry.1056724009": userResponses["What is your gender?"] || "",                                //Gender
+                "entry.1738233089": userResponses["What is your business?"] || "",                              //Business
+                "entry.1166974658": userResponses["What is your Phone number?"] || "",                          //Phone
+                "entry.2081805550": userResponses["Do you interested in buying perfume in the future?"] || "",  //Interesting
+                "entry.839337160": finalResult,                                                                 // PerfumeType
+
+            });
+
+            // ส่งข้อมูลไปยัง Google Form (แบบซ่อน)
+            fetch(googleFormURL + "?" + formData.toString(), { method: "POST", mode: "no-cors" })
+                .then(() => console.log("Data submitted to Google Form!"))
+                .catch(error => console.error("Error submitting data:", error));
+        }
+
+        loadQuestion();
+    </script>
+</body>
+
+</html>
